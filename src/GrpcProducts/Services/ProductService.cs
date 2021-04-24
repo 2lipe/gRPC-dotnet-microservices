@@ -67,5 +67,51 @@ namespace GrpcProducts.Services
             
             return productModel;
         }
+
+        public override async Task<ProductModel> UpdateProduct(UpdateProductRequest request, ServerCallContext context)
+        {
+            var product = _mapper.Map<Product>(request.Product);
+
+            bool isExist = await _productContext.Product.AnyAsync(p => p.Id == product.Id);
+            if (!isExist)
+            {
+                // throw an rpc exception
+            }
+
+            _productContext.Entry(product).State = EntityState.Modified;
+
+            try
+            {
+                await _productContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                throw new Exception(e.Message);
+            }
+
+            var productModel = _mapper.Map<ProductModel>(product);
+
+            return productModel;
+        }
+
+        public override async Task<DeleteProductResponse> DeleteProduct(DeleteProductRequest request, ServerCallContext context)
+        {
+            var product = await _productContext.Product.FindAsync(request.Id);
+            
+            if (product == null)
+            {
+                // throw an rpc exception
+            }
+
+            _productContext.Product.Remove(product);
+            var deleteCount = await _productContext.SaveChangesAsync();
+
+            var response = new DeleteProductResponse
+            {
+                Success = deleteCount > 0
+            };
+
+            return response;
+        }
     }
 }
