@@ -113,5 +113,24 @@ namespace GrpcProducts.Services
 
             return response;
         }
+
+        public override async Task<InsertBulkProductResponse> InsertBulkProduct(IAsyncStreamReader<ProductModel> requestStream, ServerCallContext context)
+        {
+            while (await requestStream.MoveNext())
+            {
+                var product = _mapper.Map<Product>(requestStream.Current);
+                _productContext.Product.Add(product);
+            }
+
+            var insertCount = await _productContext.SaveChangesAsync();
+
+            var response = new InsertBulkProductResponse
+            {
+                Success = insertCount > 0,
+                InsertCount = insertCount
+            };
+
+            return response;
+        }
     }
 }
