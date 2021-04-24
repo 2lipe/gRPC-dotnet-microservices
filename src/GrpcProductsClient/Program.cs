@@ -16,9 +16,16 @@ namespace GrpcProductsClient
             
             using var channel = GrpcChannel.ForAddress("http://localhost:5000");
             var client = new ProductProtoService.ProductProtoServiceClient(channel);
+
+            await GetProductAsync(client);
+            await GetAllProductsAsync(client);
             
-            // GetProductAsync
-            Console.WriteLine("GetProductAsync started...");
+            Console.ReadLine();
+        }
+        
+        private static async Task GetProductAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
+            Console.WriteLine("GetProduct started...");
             var response = await client.GetProductAsync(
                 new GetProductRequest
                 {
@@ -26,28 +33,16 @@ namespace GrpcProductsClient
                 });
 
             Console.WriteLine("GetProductAsync Response: " + response.ToString());
-            
-            // GetAllProducts
-            // Console.WriteLine("GetAllProducts started...");
-            // using (var clientData =  client.GetAllProducts(new GetAllProductsRequest()))
-            // {
-            //     while (await clientData.ResponseStream.MoveNext(new System.Threading.CancellationToken()))
-            //     {
-            //         var currentProduct = clientData.ResponseStream.Current;
-            //         Console.WriteLine(currentProduct);
-            //     }
-            // }
-            
-            // GetAllProducts with C#9
+        }
+        
+        private static async Task GetAllProductsAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
             Console.WriteLine("GetAllProducts with C#9 started...");
             using var clientData = client.GetAllProducts(new GetAllProductsRequest());
             await foreach (var responseData in clientData.ResponseStream.ReadAllAsync())
             {
                 Console.WriteLine(responseData);
             }
-
-            
-            Console.ReadLine();
         }
     }
 }
