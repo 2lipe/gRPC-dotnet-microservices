@@ -21,10 +21,12 @@ namespace GrpcProductsClient
             await GetProductAsync(client);
             await GetAllProductsAsync(client);
             await AddProductAsync(client);
+            await UpdateProductAsync(client);
+            await DeleteProductAsync(client);
             
             Console.ReadLine();
         }
-
+        
         private static async Task GetProductAsync(ProductProtoService.ProductProtoServiceClient client)
         {
             Console.WriteLine("GetProductAsync started...");
@@ -64,6 +66,39 @@ namespace GrpcProductsClient
                 });
             
             Console.WriteLine("AddProductAsync Response: " + addProductResponse.ToString());
+        }
+        
+        private static async Task UpdateProductAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
+            Console.WriteLine("UpdateProductAsync started...");
+            var updateProductResponse = await client.UpdateProductAsync(
+                new UpdateProductRequest
+                {
+                    Product = new ProductModel
+                    {
+                        Id = 1,
+                        Name = "Mi10T",
+                        Description = "New Xiaomi 10T awesome smartphone",
+                        Price = 699,
+                        Status = ProductStatus.Instock,
+                        CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow)
+                    }
+                });
+            
+            Console.WriteLine("UpdateProductAsync Response: " + updateProductResponse.ToString());
+
+        }
+        
+        private static async Task DeleteProductAsync(ProductProtoService.ProductProtoServiceClient client)
+        {
+            Console.WriteLine("DeleteProductAsync started...");
+            var deleteProductResponse = await client.DeleteProductAsync(
+                new DeleteProductRequest
+                {
+                    Id = 2
+                });
+
+            Console.WriteLine("DeleteProductAsync Response: " + deleteProductResponse.ToString());
         }
     }
 }
