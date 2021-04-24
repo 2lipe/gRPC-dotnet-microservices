@@ -3,9 +3,11 @@ using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcProducts.Data;
+using GrpcProducts.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductGrpc.Protos;
+using ProductStatus = ProductGrpc.Protos.ProductStatus;
 
 namespace GrpcProducts.Services
 {
@@ -65,6 +67,34 @@ namespace GrpcProducts.Services
 
                 await responseStream.WriteAsync(productModel);
             }
+        }
+
+        public override async Task<ProductModel> AddProduct(AddProductRequest request, ServerCallContext context)
+        {
+            var product = new Product
+            {
+                Id = request.Product.Id,
+                Name = request.Product.Name,
+                Description = request.Product.Description,
+                Price = request.Product.Price,
+                Status = Models.ProductStatus.INSTOCK,
+                CreatedAt = request.Product.CreatedAt.ToDateTime()
+            };
+
+            _productContext.Product.Add(product);
+            await _productContext.SaveChangesAsync();
+            
+            var productModel = new ProductModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Status = ProductStatus.Instock,
+                CreatedAt = Timestamp.FromDateTime(product.CreatedAt)
+            };
+
+            return productModel;
         }
     }
 }
