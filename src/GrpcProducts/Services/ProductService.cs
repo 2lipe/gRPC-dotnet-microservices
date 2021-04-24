@@ -35,7 +35,7 @@ namespace GrpcProducts.Services
 
             if (product == null)
             {
-                // throw an rpc exception
+                throw new RpcException(new Status(StatusCode.NotFound, $"Product with ID: {request.Id} is not found"));
             }
             
             var productModel = _mapper.Map<ProductModel>(product);
@@ -75,7 +75,7 @@ namespace GrpcProducts.Services
             bool isExist = await _productContext.Product.AnyAsync(p => p.Id == product.Id);
             if (!isExist)
             {
-                // throw an rpc exception
+                throw new RpcException(new Status(StatusCode.NotFound, $"Product with ID: {product.Id} is not found"));
             }
 
             _productContext.Entry(product).State = EntityState.Modified;
@@ -100,7 +100,7 @@ namespace GrpcProducts.Services
             
             if (product == null)
             {
-                // throw an rpc exception
+                throw new RpcException(new Status(StatusCode.NotFound, $"Product with ID: {request.Id} is not found"));
             }
 
             _productContext.Product.Remove(product);
