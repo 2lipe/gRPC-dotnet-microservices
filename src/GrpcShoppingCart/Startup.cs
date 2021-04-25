@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GrpcShoppingCart.Data;
+using GrpcShoppingCart.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,8 @@ namespace GrpcShoppingCart
             {
                 options.UseInMemoryDatabase("ShoppingCart");
             });
+
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,7 +41,7 @@ namespace GrpcShoppingCart
 
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<ShoppingCartService>();
 
                 endpoints.MapGet("/",
                     async context =>
