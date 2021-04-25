@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
+using IdentityModel.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -38,6 +40,8 @@ namespace ShoppingCartWorkerService
                 using var scChannel = GrpcChannel.ForAddress(scUrl);
                 var scClient = new ShoppingCartProtoService.ShoppingCartProtoServiceClient(scChannel);
 
+                var token = await GetTokenFromIS4();
+                
                 var scModel = await GetOrCreateShoppingCartAsync(scClient);
 
                 var pcUrl = _configuration.GetValue<string>("WorkerService:ProductServerUrl");
@@ -77,6 +81,30 @@ namespace ShoppingCartWorkerService
                 
                 await Task.Delay(interval, stoppingToken);
             }
+        }
+
+        private async Task<string> GetTokenFromIS4()
+        {
+            var urlAddress = _configuration.GetValue<string>("WorkerService:IdentityServerUrl");
+            var client = new HttpClient();
+            var disco = await client.GetDiscoveryDocumentAsync(urlAddress);
+
+            if (disco.IsError)
+            {
+                Console.WriteLine(disco.Error);
+                return string.Empty;
+            }
+
+            var tokenResponse = await client.RequestClientCredentialsTokenAsync(
+                new ClientCredentialsTokenRequest
+                {
+                    Address = disco.TokenEndpoint,
+                    ClientId = "ShoppingCartClient",
+                    ClientSecret = "secret",
+                    Scope = "ShoppingCartAPI"
+                });
+
+            return tokenResponse.AccessToken;
         }
 
         private async Task<ShoppingCartModel> GetOrCreateShoppingCartAsync(ShoppingCartProtoService.ShoppingCartProtoServiceClient scClient)
