@@ -61,6 +61,46 @@ namespace GrpcShoppingCart.Services
             return shoppingCartModel;
         }
 
+        public override async Task<AddItemIntoShoppingCardResponse> AddItemIntoShoppingCart(IAsyncStreamReader<AddItemIntoShoppingCartRequest> requestStream, ServerCallContext context)
+        {
+            while (await requestStream.MoveNext())
+            {
+                var shoppingCart = await _shoppingCartContext.ShoppingCart
+                    .FirstOrDefaultAsync(s => s.UserName == requestStream.Current.Username);
+
+                if (shoppingCart == null)
+                {
+                    throw new RpcException(new Status(StatusCode.NotFound,
+                        $"ShoppingCart with UserName={requestStream.Current.Username} has not found"));
+                }
+
+                var newAddedCartItem = _mapper.Map<ShoppingCartItem>(requestStream.Current.NewCartItem);
+                var cartItem = shoppingCart.Items.FirstOrDefault(i => i.ProductId == newAddedCartItem.ProductId);
+
+                if (null != cartItem)
+                {
+                    cartItem.Quantity++;
+                }
+                else
+                {
+                    float discount = 100;
+                    newAddedCartItem.Price -= discount;
+                    
+                    shoppingCart.Items.Add(newAddedCartItem);
+                }
+            }
+
+            var insertCount = await _shoppingCartContext.SaveChangesAsync();
+
+            var response = new AddItemIntoShoppingCardResponse
+            {
+                Success = insertCount > 0,
+                InsertCount = insertCount
+            };
+
+            return response;
+        }
+
         public override async Task<RemoveItemIntoShoppingCartResponse> RemoveItemIntoShoppingCart(RemoveItemIntoShoppingCartRequest request, ServerCallContext context)
         {
             var shoppingCart = await _shoppingCartContext.ShoppingCart
@@ -75,7 +115,7 @@ namespace GrpcShoppingCart.Services
             var removeCartItem = shoppingCart.Items
                 .FirstOrDefault(i => i.ProductId == request.RemoveCartItem.ProductId);
 
-            if (removeCartItem == null)
+            if (null == removeCartItem)
             {
                 throw new RpcException(
                     new Status(StatusCode.NotFound,
