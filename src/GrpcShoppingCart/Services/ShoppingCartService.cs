@@ -13,12 +13,14 @@ namespace GrpcShoppingCart.Services
     public class ShoppingCartService : ShoppingCartProtoService.ShoppingCartProtoServiceBase
     {
         private readonly ShoppingCartContext _shoppingCartContext;
+        private readonly DiscountService _discountService;
         private readonly IMapper _mapper;
         private readonly ILogger<ShoppingCartService> _logger;
 
-        public ShoppingCartService(ShoppingCartContext shoppingCartContext, IMapper mapper, ILogger<ShoppingCartService> logger)
+        public ShoppingCartService(ShoppingCartContext shoppingCartContext, DiscountService discountService, IMapper mapper, ILogger<ShoppingCartService> logger)
         {
             _shoppingCartContext = shoppingCartContext;
+            _discountService = discountService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -83,8 +85,9 @@ namespace GrpcShoppingCart.Services
                 }
                 else
                 {
-                    float discount = 100;
-                    newAddedCartItem.Price -= discount;
+                    var discount = await _discountService.GetDiscount(requestStream.Current.DiscountCode);
+                    
+                    newAddedCartItem.Price -= discount.Amount;
                     
                     shoppingCart.Items.Add(newAddedCartItem);
                 }

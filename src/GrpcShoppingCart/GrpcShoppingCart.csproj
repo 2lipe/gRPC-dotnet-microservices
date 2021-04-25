@@ -12,7 +12,7 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Protobuf Include="../GrpcDiscount/Protos/discount.proto" GrpcServices="Cliente" >
+        <Protobuf Include="../GrpcDiscount/Protos/discount.proto" GrpcServices="Cliente">
             <Link>Protos/discount.proto</Link>
         </Protobuf>
         <Protobuf Include="Protos/shoppingcart.proto" GrpcServices="Server" />
