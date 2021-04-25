@@ -4,12 +4,14 @@ using AutoMapper;
 using Grpc.Core;
 using GrpcShoppingCart.Data;
 using GrpcShoppingCart.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ShoppingCartGrpc.Protos;
 
 namespace GrpcShoppingCart.Services
 {
+    [Authorize]
     public class ShoppingCartService : ShoppingCartProtoService.ShoppingCartProtoServiceBase
     {
         private readonly ShoppingCartContext _shoppingCartContext;
