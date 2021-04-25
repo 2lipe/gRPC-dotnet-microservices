@@ -9,5 +9,13 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.5" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <Protobuf Include="Protos/shoppingcart.proto" GrpcServices="Server" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Services" />
+    </ItemGroup>
+    
 </Project>
