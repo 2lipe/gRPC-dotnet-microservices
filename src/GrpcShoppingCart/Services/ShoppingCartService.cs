@@ -64,7 +64,8 @@ namespace GrpcShoppingCart.Services
             
             return shoppingCartModel;
         }
-
+        
+        [AllowAnonymous]
         public override async Task<AddItemIntoShoppingCardResponse> AddItemIntoShoppingCart(IAsyncStreamReader<AddItemIntoShoppingCartRequest> requestStream, ServerCallContext context)
         {
             while (await requestStream.MoveNext())
@@ -105,7 +106,8 @@ namespace GrpcShoppingCart.Services
 
             return response;
         }
-
+        
+        [AllowAnonymous]
         public override async Task<RemoveItemIntoShoppingCartResponse> RemoveItemIntoShoppingCart(RemoveItemIntoShoppingCartRequest request, ServerCallContext context)
         {
             var shoppingCart = await _shoppingCartContext.ShoppingCart
